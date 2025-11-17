@@ -292,7 +292,7 @@ def run_two_raster_test(
     s2 = vals2[:PLOT_SAMPLE_MAX]
     dfp = pd.DataFrame({
         "NDVI": np.concatenate([s1, s2]),
-        "Zone": [zone1_label] * len(s1) + [zone2_label] * len(s2)
+            "Zone": ["Zone 1"] * len(s1) + ["Zone 2"] * len(s2)
     })
     # Combined plotting: boxplot on the left, frequency + cumulative on the right
     range_x = (float(min(np.min(s1), np.min(s2))), float(max(np.max(s1), np.max(s2))))
