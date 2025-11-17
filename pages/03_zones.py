@@ -196,8 +196,8 @@ def run_two_raster_test(
 
     # Uploaders (two rasters)
     c_up1, c_up2 = st.columns(2)
-    f1 = c_up1.file_uploader(f"Upload NDVI GeoTIFF for **{zone1_label}** (Zone 1)", type=["tif", "tiff"], key=f"{map_key_prefix}_z1")
-    f2 = c_up2.file_uploader(f"Upload NDVI GeoTIFF for **{zone2_label}** (Zone 2)", type=["tif", "tiff"], key=f"{map_key_prefix}_z2")
+    f1 = c_up1.file_uploader("Upload NDVI GeoTIFF for Zone 1", type=["tif", "tiff"], key=f"{map_key_prefix}_z1")
+    f2 = c_up2.file_uploader("Upload NDVI GeoTIFF for Zone 2", type=["tif", "tiff"], key=f"{map_key_prefix}_z2")
 
     # Test controls
     c1, c2, c3 = st.columns([1.1, 1.1, 1])
@@ -236,8 +236,8 @@ def run_two_raster_test(
     # Show quick-look "maps"
     st.markdown("### NDVI quick-look (common color scale)")
     cm1, cm2 = st.columns(2)
-    cm1.image(rgb1, caption=f"{zone1_label} — green = higher NDVI", use_container_width=True)
-    cm2.image(rgb2, caption=f"{zone2_label} — green = higher NDVI", use_container_width=True)
+    cm1.image(rgb1, caption="Zone 1 — green = higher NDVI", use_container_width=True)
+    cm2.image(rgb2, caption="Zone 2 — green = higher NDVI", use_container_width=True)
 
     # Extract all valid values
     vals1 = ndvi1[valid1]
@@ -330,34 +330,32 @@ The quick-look images use a **common color scale** for fair visual comparison.
 """
     )
 
-    tab1, tab2 = st.tabs(["Parks vs Residential", "Industrial vs Town"])
+    tab1, tab2 = st.tabs(["Zone 1 vs Zone 2", "Zone 1 vs Zone 2"])
 
     with tab1:
         st.markdown(
-            "> **Question**: Are parks significantly greener than residential neighborhoods?\n"
-            "Upload an NDVI for **Parks (Zone 1)** and an NDVI for **Residential (Zone 2)**."
+            "> **Compare**: Upload two NDVI files for Zone 1 and Zone 2."
         )
         run_two_raster_test(
-            tab_title="Parks (Zone 1) vs Residential (Zone 2)",
-            zone1_label="Parks",
-            zone2_label="Residential",
-            default_alt="greater",          # Parks > Residential
+            tab_title="Zone 1 vs Zone 2",
+            zone1_label="Zone 1",
+            zone2_label="Zone 2",
+            default_alt="two-sided",
             default_test="Welch t-test",
-            map_key_prefix="parks_resid",
+            map_key_prefix="comp1",
         )
 
     with tab2:
         st.markdown(
-            "> **Question**: Are industrial zones statistically less green than the rest of the town?\n"
-            "Upload an NDVI for **Industrial (Zone 1)** and an NDVI for the **Town (Zone 2)**."
+            "> **Compare**: Upload two NDVI files for Zone 1 and Zone 2."
         )
         run_two_raster_test(
-            tab_title="Industrial (Zone 1) vs Town (Zone 2)",
-            zone1_label="Industrial",
-            zone2_label="Town",
-            default_alt="less",             # Industrial < Town
+            tab_title="Zone 1 vs Zone 2",
+            zone1_label="Zone 1",
+            zone2_label="Zone 2",
+            default_alt="two-sided",
             default_test="Welch t-test",
-            map_key_prefix="ind_town",
+            map_key_prefix="comp2",
         )
 
 
