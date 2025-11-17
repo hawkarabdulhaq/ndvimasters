@@ -144,6 +144,45 @@ def two_group_box(df, value_col="NDVI", group_col="Zone", title=""):
     return fig
 
 
+def two_group_hist(df, value_col="NDVI", group_col="Zone", title="", bins=40, range_x=None):
+    """Overlaid histogram (frequency) for two groups."""
+    fig = px.histogram(
+        df,
+        x=value_col,
+        color=group_col,
+        nbins=bins,
+        barmode="overlay",
+        opacity=0.6,
+        title=title,
+        range_x=range_x,
+    )
+    fig.update_layout(yaxis_title="Count", margin=dict(l=10, r=10, b=10, t=50))
+    return fig
+
+
+def two_group_ecdf(df, value_col="NDVI", group_col="Zone", title="", range_x=None):
+    """ECDF plot for two groups (cumulative distribution)."""
+    try:
+        fig = px.ecdf(df, x=value_col, color=group_col, title=title, range_x=range_x)
+        fig.update_layout(yaxis_title="ECDF", margin=dict(l=10, r=10, b=10, t=50))
+        return fig
+    except Exception:
+        # Fallback to cumulative histogram if ecdf not available
+        fig = px.histogram(
+            df,
+            x=value_col,
+            color=group_col,
+            histnorm="probability",
+            nbins=200,
+            barmode="overlay",
+            opacity=0.6,
+            title=title,
+            range_x=range_x,
+        )
+        fig.update_layout(yaxis_title="Cumulative probability (approx)", margin=dict(l=10, r=10, b=10, t=50))
+        return fig
+
+
 # ---- UI HELPER (one tab) ----
 def run_two_raster_test(
     tab_title: str,
@@ -255,8 +294,22 @@ def run_two_raster_test(
         "NDVI": np.concatenate([s1, s2]),
         "Zone": [zone1_label] * len(s1) + [zone2_label] * len(s2)
     })
-    fig = two_group_box(dfp, title="NDVI by Zone (Boxplot with outliers)")
-    st.plotly_chart(fig, use_container_width=True)
+    # Combined plotting: boxplot on the left, frequency + cumulative on the right
+    range_x = (float(min(np.min(s1), np.min(s2))), float(max(np.max(s1), np.max(s2))))
+    cbox, cresc = st.columns([1.4, 1])
+    with cbox:
+        fig_box = two_group_box(dfp, title="NDVI by Zone (Boxplot with outliers)")
+        st.plotly_chart(fig_box, use_container_width=True)
+    with cresc:
+        fig_hist_side = two_group_hist(dfp, title="Frequency (sampled)", range_x=range_x)
+        st.plotly_chart(fig_hist_side, use_container_width=True)
+        fig_ecdf_side = two_group_ecdf(dfp, title="Cumulative / ECDF (sampled)", range_x=range_x)
+        st.plotly_chart(fig_ecdf_side, use_container_width=True)
+
+    # Also show a full-width frequency chart below the boxplot (user requested)
+    st.markdown("### Frequency (sampled) — full width")
+    fig_hist_full = two_group_hist(dfp, title="NDVI Frequency by Zone (sampled)", range_x=range_x)
+    st.plotly_chart(fig_hist_full, use_container_width=True)
 
     st.caption(
         "Notes: Type I error = false positive (reject a true H₀); Type II = false negative (retain a false H₀). "
