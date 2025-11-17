@@ -194,10 +194,20 @@ def run_two_raster_test(
 ):
     st.subheader(tab_title)
 
+    # Date selectors (user names for Date 1 / Date 2)
+    dcol1, dcol2 = st.columns(2)
+    date1 = dcol1.date_input("Date 1", key=f"{map_key_prefix}_date1")
+    date2 = dcol2.date_input("Date 2", key=f"{map_key_prefix}_date2")
+    # human-friendly labels
+    label1_full = f"Date 1 ({date1.isoformat()})"
+    label2_full = f"Date 2 ({date2.isoformat()})"
+    label1_short = "Date 1"
+    label2_short = "Date 2"
+
     # Uploaders (two rasters)
     c_up1, c_up2 = st.columns(2)
-    f1 = c_up1.file_uploader("Upload NDVI GeoTIFF for Zone 1", type=["tif", "tiff"], key=f"{map_key_prefix}_z1")
-    f2 = c_up2.file_uploader("Upload NDVI GeoTIFF for Zone 2", type=["tif", "tiff"], key=f"{map_key_prefix}_z2")
+    f1 = c_up1.file_uploader(f"Upload NDVI GeoTIFF for {label1_full}", type=["tif", "tiff"], key=f"{map_key_prefix}_z1")
+    f2 = c_up2.file_uploader(f"Upload NDVI GeoTIFF for {label2_full}", type=["tif", "tiff"], key=f"{map_key_prefix}_z2")
 
     # Test controls
     c1, c2, c3 = st.columns([1.1, 1.1, 1])
@@ -236,8 +246,8 @@ def run_two_raster_test(
     # Show quick-look "maps"
     st.markdown("### NDVI quick-look (common color scale)")
     cm1, cm2 = st.columns(2)
-    cm1.image(rgb1, caption="Zone 1 — green = higher NDVI", use_container_width=True)
-    cm2.image(rgb2, caption="Zone 2 — green = higher NDVI", use_container_width=True)
+    cm1.image(rgb1, caption=f"{label1_full} — green = higher NDVI", use_container_width=True)
+    cm2.image(rgb2, caption=f"{label2_full} — green = higher NDVI", use_container_width=True)
 
     # Extract all valid values
     vals1 = ndvi1[valid1]
@@ -269,8 +279,8 @@ def run_two_raster_test(
 
     st.markdown("### Results")
     r1, r2, r3, r4 = st.columns(4)
-    r1.metric("n (Zone 1)", f"{n1:,}")
-    r2.metric("n (Zone 2)", f"{n2:,}")
+    r1.metric(f"n ({label1_short})", f"{n1:,}")
+    r2.metric(f"n ({label2_short})", f"{n2:,}")
     r3.metric(f"{stat_lbl} statistic", f"{test_res['stat']:.3f}" if not np.isnan(test_res["stat"]) else "N/A")
     r4.metric("p-value", f"{test_res['p']:.4g}" if not np.isnan(test_res["p"]) else "N/A")
 
@@ -282,8 +292,8 @@ def run_two_raster_test(
 
     st.markdown(
         f"""
-**{zone1_label}**: mean = `{mean1:.3f}`, median = `{med1:.3f}`  
-**{zone2_label}**: mean = `{mean2:.3f}`, median = `{med2:.3f}`
+**{label1_short} ({date1.isoformat()})**: mean = `{mean1:.3f}`, median = `{med1:.3f}`  
+**{label2_short} ({date2.isoformat()})**: mean = `{mean2:.3f}`, median = `{med2:.3f}`
 """
     )
 
@@ -292,7 +302,7 @@ def run_two_raster_test(
     s2 = vals2[:PLOT_SAMPLE_MAX]
     dfp = pd.DataFrame({
         "NDVI": np.concatenate([s1, s2]),
-            "Zone": ["Zone 1"] * len(s1) + ["Zone 2"] * len(s2)
+        "Zone": [label1_short] * len(s1) + [label2_short] * len(s2)
     })
     # Combined plotting: boxplot on the left, frequency + cumulative on the right
     range_x = (float(min(np.min(s1), np.min(s2))), float(max(np.max(s1), np.max(s2))))
@@ -330,7 +340,7 @@ The quick-look images use a **common color scale** for fair visual comparison.
 """
     )
 
-    tab1, tab2 = st.tabs(["Zone 1 vs Zone 2", "Zone 1 vs Zone 2"])
+    tab1, = st.tabs(["Zone 1 vs Zone 2"])
 
     with tab1:
         st.markdown(
@@ -343,19 +353,6 @@ The quick-look images use a **common color scale** for fair visual comparison.
             default_alt="two-sided",
             default_test="Welch t-test",
             map_key_prefix="comp1",
-        )
-
-    with tab2:
-        st.markdown(
-            "> **Compare**: Upload two NDVI files for Zone 1 and Zone 2."
-        )
-        run_two_raster_test(
-            tab_title="Zone 1 vs Zone 2",
-            zone1_label="Zone 1",
-            zone2_label="Zone 2",
-            default_alt="two-sided",
-            default_test="Welch t-test",
-            map_key_prefix="comp2",
         )
 
 
